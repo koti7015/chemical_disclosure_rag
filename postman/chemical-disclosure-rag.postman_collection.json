@@ -1,0 +1,914 @@
+{
+  "info": {
+    "name": "Chemical Disclosure RAG",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Setup",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "sql_records and vector_records should both be 96 after ingest"
+          }
+        },
+        {
+          "name": "Ingest sample",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/ingest",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingest"
+              ]
+            },
+            "description": "Choose data/sample_100.xlsx in the 'file' field. First time: loaded, 96 rows. Second time: already_loaded"
+          }
+        },
+        {
+          "name": "Ingest wrong file type",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/ingest",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ingest"
+              ]
+            },
+            "description": "Choose README.md. Expect 400"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. SQL route",
+      "item": [
+        {
+          "name": "CAS lookup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Which products contain CAS 14807-96-6?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "route sql, total 2, Talc"
+          }
+        },
+        {
+          "name": "CAS with non-breaking hyphens",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Which products contain CAS 14807‑96‑6?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "same as CAS lookup"
+          }
+        },
+        {
+          "name": "Discontinued in a year",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Show products discontinued in 2017\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "total 6"
+          }
+        },
+        {
+          "name": "Active products only",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Which products are still on sale and not discontinued?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "discontinued false, total 68"
+          }
+        },
+        {
+          "name": "Subcategory",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What chemicals are reported in Eye Shadow products?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "total 8"
+          }
+        },
+        {
+          "name": "Date range",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Products first reported between 2013 and 2014\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "total 19"
+          }
+        },
+        {
+          "name": "Chemicals removed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Which chemicals were removed from products?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "chemical_removed true"
+          }
+        },
+        {
+          "name": "Company + category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What chemicals does New Avon LLC report in Bath Products?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "two filters"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Entity resolution",
+      "item": [
+        {
+          "name": "Typo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Show products with Titanium dioxid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "total 55, 'Matched chemical' warning, '30 of 55' warning"
+          }
+        },
+        {
+          "name": "Synonym",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Which products contain cocamide DEA?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "Cocamide DEA + Cocamide diethanolamine, total 7"
+          }
+        },
+        {
+          "name": "Same CAS number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Which products contain Vitamin A palmitate?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "retinol esters also included (same CAS)"
+          }
+        },
+        {
+          "name": "Partial company name",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What chemicals does Avon report?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "company New Avon LLC"
+          }
+        },
+        {
+          "name": "Ambiguous company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What chemicals does Beauty report?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "clarification with options, no evidence"
+          }
+        },
+        {
+          "name": "Chemical not in data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Which products contain lead?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "No matching records found"
+          }
+        },
+        {
+          "name": "Unknown CAS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Which products contain CAS 99999-99-9?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "No matching records found"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Vector and hybrid",
+      "item": [
+        {
+          "name": "Vector only",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Show me products meant for children\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "route vector (may become sql if the LLM picks Baby Products)"
+          }
+        },
+        {
+          "name": "Hybrid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Which makeup products are for lips?\",\n  \"top_k\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "route hybrid, total 28, 5 rows, lip products first"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Multi-part and aggregates",
+      "item": [
+        {
+          "name": "Compare",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Compare New Avon LLC and Coty\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "2 sub_tasks in query_plan"
+          }
+        },
+        {
+          "name": "Trend",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Summarize reporting trends over time\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "route sql_aggregate, table per year in steps"
+          }
+        },
+        {
+          "name": "Trend with filter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Show the reporting trend by year for Makeup products\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "sql_aggregate with category filter"
+          }
+        },
+        {
+          "name": "Data quality",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Are there any conflicting or missing data in the records?\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "9 date_conflict, 5 trade_secret, 1 cas_many_names"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. History and records",
+      "item": [
+        {
+          "name": "History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "history"
+              ]
+            },
+            "description": "newest first"
+          }
+        },
+        {
+          "name": "History detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/history/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "history",
+                "1"
+              ]
+            },
+            "description": "full plan, evidence, warnings, confidence"
+          }
+        },
+        {
+          "name": "History not found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/history/9999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "history",
+                "9999"
+              ]
+            },
+            "description": "404"
+          }
+        },
+        {
+          "name": "Records for a product",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/records/5223",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "records",
+                "5223"
+              ]
+            },
+            "description": "use any CDPHId from an answer's evidence"
+          }
+        },
+        {
+          "name": "Records not found",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/records/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "records",
+                "1"
+              ]
+            },
+            "description": "404"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Validation errors",
+      "item": [
+        {
+          "name": "Question too short",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"hi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "422, min length 3"
+          }
+        },
+        {
+          "name": "top_k out of range",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"Any baby products?\",\n  \"top_k\": 100\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/ask",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ask"
+              ]
+            },
+            "description": "422, top_k must be 1-50"
+          }
+        }
+      ]
+    }
+  ]
+}

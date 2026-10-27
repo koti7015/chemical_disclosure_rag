@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+python-multipart
+pandas
+numpy
+openpyxl
+chromadb
+sentence-transformers
+groq
+rapidfuzz
+python-dotenv
+# for the tests
+pytest
+httpx
